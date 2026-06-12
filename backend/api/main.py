@@ -2,12 +2,16 @@ import asyncio
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 load_dotenv()
 app = FastAPI()
 
 robot_reader: asyncio.StreamReader = None
 robot_writer: asyncio.StreamWriter = None
+
+class RobotCommand(BaseModel):
+    command: str
 
 @app.on_event("startup")
 async def connect_to_robot():
@@ -27,6 +31,7 @@ async def send_robot_command(command: str):
     return "Robot non connecté"
 
 @app.post("/robot")
-async def send_command():
-    res = await send_robot_command("test")
+async def send_command(payload: RobotCommand):
+    value = payload.command
+    res = await send_robot_command(value)
     return {"status": "success", "robot_response": res}

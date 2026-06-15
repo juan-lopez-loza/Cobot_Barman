@@ -37,6 +37,17 @@ class TrajectoryPoint(SQLModel, table=True):
 
     step: RecipeStep = Relationship(back_populates="points")
 
+
+class GlassSlot(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    is_free: bool = Field(default=True)
+    x: float
+    y: float
+    z: float
+    rx: float
+    ry: float
+    rz: float
+
 def init_db():
     SQLModel.metadata.create_all(engine)
 

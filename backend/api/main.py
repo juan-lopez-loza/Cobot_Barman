@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
+from database.db import (init_db)
 
 load_dotenv()
 app = FastAPI()
@@ -14,6 +15,12 @@ class RobotCommand(BaseModel):
     command: str
 
 @app.on_event("startup")
+async def startup():
+    init_db()
+    print("Database initialized")
+
+    await connect_to_robot()
+
 async def connect_to_robot():
     global robot_reader, robot_writer
     try:

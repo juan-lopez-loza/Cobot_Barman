@@ -16,5 +16,5 @@ async def startup():
     await connect_to_robot()
 
 app.include_router(orders.router)
-# app.include_router(cocktails.router)
+app.include_router(cocktails.router)
 # app.include_router(admin.router)

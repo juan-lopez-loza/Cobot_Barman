@@ -1,56 +1,79 @@
-import os
-from typing import Optional, List
-from sqlmodel import Field, Relationship, SQLModel, create_engine, Session
-
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-engine = create_engine(sqlite_url, echo=True)
-
-class Cocktail(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    name: str = Field(max_length=50)
-
-    steps: list["RecipeStep"] = Relationship(back_populates="cocktail")
-
-class RecipeStep(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    cocktail_id: int = Field(foreign_key="cocktail.id")
-    step_order: int
-    description: str
-
-    cocktail: Cocktail = Relationship(back_populates="steps")
-    points: list["TrajectoryPoint"] = Relationship(back_populates="step")
-
-class TrajectoryPoint(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    step_id: int = Field(foreign_key="recipestep.id")
-    point_order: int
-    x: float
-    y: float
-    z: float
-    rx: float
-    ry: float
-    rz: float
-    speed: int = Field(default=10)
-    duration: int = Field(default=0)
-
-    step: RecipeStep = Relationship(back_populates="points")
+from typing import List, Optional
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
-class GlassSlot(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    is_free: bool = Field(default=True)
-    x: float
-    y: float
-    z: float
-    rx: float
-    ry: float
-    rz: float
+class Base(DeclarativeBase):
+    pass
 
-def init_db():
-    SQLModel.metadata.create_all(engine)
 
-def get_session():
-    with Session(engine) as session:
-        yield session
+class Cocktail(Base):
+    __tablename__ = "cocktail"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    steps: Mapped[List["RecipeStep"]] = relationship(back_populates="cocktail", cascade="all, delete-orphan")
+
+
+class RecipeStep(Base):
+    __tablename__ = "recipestep"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    cocktail_id: Mapped[int] = mapped_column(ForeignKey("cocktail.id", ondelete="CASCADE"))
+    drink_id: Mapped[Optional[int]] = mapped_column(ForeignKey("drink.id"))
+    step_order: Mapped[int]
+    description: Mapped[str] = mapped_column(String(255))
+    cocktail: Mapped["Cocktail"] = relationship(back_populates="steps")
+    points: Mapped[List["TrajectoryPoint"]] = relationship(back_populates="step", cascade="all, delete-orphan")
+    drink: Mapped[Optional["Drink"]] = relationship()
+
+
+class TrajectoryPoint(Base):
+    __tablename__ = "trajectorypoint"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    step_id: Mapped[int] = mapped_column(ForeignKey("recipestep.id", ondelete="CASCADE"))
+    point_order: Mapped[int]
+    x: Mapped[float]
+    y: Mapped[float]
+    z: Mapped[float]
+    rx: Mapped[float]
+    ry: Mapped[float]
+    rz: Mapped[float]
+
+    speed: Mapped[int] = mapped_column(default=10)
+    duration: Mapped[int] = mapped_column(default=0)
+    step: Mapped["RecipeStep"] = relationship(back_populates="points")
+
+
+class GlassSlot(Base):
+    __tablename__ = "glassslot"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    is_free: Mapped[bool] = mapped_column(default=True)
+    x: Mapped[float]
+    y: Mapped[float]
+    z: Mapped[float]
+    rx: Mapped[float]
+    ry: Mapped[float]
+    rz: Mapped[float]
+
+
+class Drink(Base):
+    __tablename__ = "drink"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    x: Mapped[float]
+    y: Mapped[float]
+    z: Mapped[float]
+    rx: Mapped[float]
+    ry: Mapped[float]
+    rz: Mapped[float]
+
+
+class Admin(Base):
+    __tablename__ = "admin"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    password: Mapped[str] = mapped_column(String(255))

@@ -4,14 +4,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+host = os.getenv("ROBOT_HOST")
+port = os.getenv("ROBOT_PORT")
 
 robot_reader: asyncio.StreamReader = None
 robot_writer: asyncio.StreamWriter = None
 
 async def connect_to_robot():
+    print(f"Connecting to Robot at {host}:{port}")
     global robot_reader, robot_writer
     try:
-        robot_reader, robot_writer = await asyncio.open_connection(os.getenv("ROBOT_HOST"), os.getenv("ROBOT_PORT"))
+        robot_reader, robot_writer = await asyncio.open_connection(host, port)
         print("Connected to Robot successfully")
     except Exception as e:
         print(f"Failed to connect to Robot: {e}")

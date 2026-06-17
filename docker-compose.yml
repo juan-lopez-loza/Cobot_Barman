@@ -38,6 +38,17 @@ services:
       cobot_db:
         condition: service_healthy
 
+  frontend:
+    build: ./frontend
+    container_name: cobot_frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - path: .env
 
 volumes:
   db_cobot:

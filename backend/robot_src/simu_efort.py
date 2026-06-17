@@ -1,11 +1,12 @@
 import asyncio
-import os
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
-HOST = os.getenv("ROBOT_HOST")
-PORT = os.getenv("ROBOT_PORT")
+host = os.getenv("ROBOT_HOST")
+port = os.getenv("ROBOT_PORT")
+
 
 async def handle_client(reader, writer):
     while True:
@@ -17,8 +18,7 @@ async def handle_client(reader, writer):
         writer.write(f"{response}\n".encode())
         await writer.drain()
 
-async def main():
-    server =  await asyncio.start_server(handle_client, host=HOST, port=PORT)
-    async with server: await server.serve_forever()
-
-asyncio.run(main())
+async def init_server():
+    server =  await asyncio.start_server(handle_client, host=host, port=port)
+    print(f"Robot Server started at {host}:{port}")
+    asyncio.create_task(server.serve_forever())

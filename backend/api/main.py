@@ -12,7 +12,6 @@ app = FastAPI()
 async def startup():
     init_db()
     print("Database initialized")
-
     await connect_to_robot()
 
 app.include_router(orders.router)

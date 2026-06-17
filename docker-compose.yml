@@ -24,7 +24,7 @@ services:
       test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-u${DB_USER}", "-p${DB_PASSWORD}"]
 
   backend:
-    build: ./backend/Dockerfile
+    build: ./backend
     container_name: cobot_backend
     restart: always
     ports:

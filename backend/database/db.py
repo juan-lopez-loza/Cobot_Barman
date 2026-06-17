@@ -1,6 +1,18 @@
 from typing import List, Optional
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_url = os.getenv("DATABASE_URL")
+print(f"Connecting to: {db_url}")
+
+engine = create_engine(db_url)
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
 
 
 class Base(DeclarativeBase):

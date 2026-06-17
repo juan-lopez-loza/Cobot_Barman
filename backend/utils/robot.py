@@ -1,5 +1,9 @@
 import asyncio
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 robot_reader: asyncio.StreamReader = None
 robot_writer: asyncio.StreamWriter = None

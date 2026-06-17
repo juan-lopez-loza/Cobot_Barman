@@ -1,4 +1,11 @@
 import asyncio
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+HOST = os.getenv("ROBOT_HOST")
+PORT = os.getenv("ROBOT_PORT")
 
 async def handle_client(reader, writer):
     while True:
@@ -11,7 +18,7 @@ async def handle_client(reader, writer):
         await writer.drain()
 
 async def main():
-    server =  await asyncio.start_server(handle_client, host="127.0.0.1", port=8080)
+    server =  await asyncio.start_server(handle_client, host=HOST, port=PORT)
     async with server: await server.serve_forever()
 
 asyncio.run(main())

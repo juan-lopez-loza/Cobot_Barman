@@ -29,10 +29,8 @@ services:
     restart: always
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@cobot_db:3306/${DB_DATABASE}
-      - UV_LINK_MODE=copy
-      - UV_COMPILE_BYTECODE=1
+    env_file:
+      - path: .env
     volumes:
       - ./backend:/app
       - /app/.venv

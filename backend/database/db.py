@@ -11,6 +11,7 @@ db_url = os.getenv("DATABASE_URL")
 engine = create_engine(db_url)
 
 def init_db():
+    print("Initializing database...")
     Base.metadata.create_all(bind=engine)
 
 

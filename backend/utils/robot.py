@@ -19,10 +19,11 @@ async def connect_to_robot():
     except Exception as e:
         print(f"Failed to connect to Robot: {e}")
 
+
 async def send_robot_command(command: str):
     if robot_writer:
         robot_writer.write(f"{command}\n".encode())
         await robot_writer.drain()
-        response = await robot_reader.readline()
-        return response.decode()
+        print(f"Commande envoyée au robot : {command[:30]}...")
+        return "Commande envoyée"
     return "Robot non connecté"

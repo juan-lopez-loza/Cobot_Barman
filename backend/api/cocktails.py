@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from pydantic import BaseModel
-from database.db import engine, Cocktail
+from database.db import engine, Cocktail, Admin
 
 router = APIRouter(prefix="/cocktails", tags=["cocktails"])
 

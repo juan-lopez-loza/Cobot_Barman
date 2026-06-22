@@ -24,6 +24,10 @@ async def send_robot_command(command: str):
     if robot_writer:
         robot_writer.write(f"{command}\n".encode())
         await robot_writer.drain()
-        print(f"Commande envoyée au robot : {command[:30]}...")
         return "Commande envoyée"
     return "Robot non connecté"
+
+async def get_robot_response():
+    if robot_reader:
+        data = await robot_reader.readline()
+        print(f"Robot response: {data}")

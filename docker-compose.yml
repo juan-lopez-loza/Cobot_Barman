@@ -31,8 +31,15 @@ services:
       - "8000:8000"
     env_file:
       - path: .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend
+          target: /app/backend
     volumes:
-      - ./backend:/app
+      #- ./backend:/app
       - /app/.venv
     depends_on:
       cobot_db:

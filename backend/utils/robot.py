@@ -9,14 +9,12 @@ load_dotenv()
 host = os.getenv("ROBOT_HOST")
 port = os.getenv("ROBOT_PORT")
 
-
 with open("./robot_src/init_onrobot.script", "r") as f:
     init_script = f.read()
 
 def open_data():
     with open('./database/test.json', 'r') as f:
         json_data = f.read()
-        global database
         database = json.loads(json_data)
         return database
 
@@ -40,14 +38,25 @@ def send_to_robot(script: str):
     except Exception as e:
         print(f"Failed to send command: {e}")
 
+def find_glasses():
+    database = open_data()
+    glasses = database[1]["glasses"]
+    glass_positions = ""
+    for glass in glasses:
+        if glass['state']:
+            glass_positions += glass['value'] + "\n"
+            glass_positions += glass['aproach'] + "\n"
+            return glass_positions
+
 def find_drink(command: str):
+    database = open_data()
     drinks = database[0]["drinks"]
     for drink in drinks:
         if drink["name"] == command:
             return drink["positions"]
 
 
-def create_script(positions: list):
+def create_script(positions: list, glass: str):
     command = ""
     for element in positions:
         command += f"  {element['value']}\n"

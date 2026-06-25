@@ -18,3 +18,4 @@ async def send_order(drink_name: str):
     positions = find_drink(drink_name)
     script = create_script(positions, glass, rg_positions)
     send_to_robot(script)
+    return {"Status": "ok"}

@@ -1,34 +1,39 @@
-import asyncio
 import os
+import json
 from dotenv import load_dotenv
 import socket
 from email.header import UTF8
-import json
 
 load_dotenv()
 
 host = os.getenv("ROBOT_HOST")
 port = os.getenv("ROBOT_PORT")
 
-with open('../database/test.json', 'r') as f:
-    json_data = f.read()
-    data = json.loads(json_data)
 
-with open("../robot_src/init_onrobot.script", "r") as f:
+with open("./robot_src/init_onrobot.script", "r") as f:
+    init_script = f.read()
+
+def open_data():
+    with open('./database/test.json', 'r') as f:
+        json_data = f.read()
+        global database
+        database = json.loads(json_data)
+        return database
+
+with open("./robot_src/init_onrobot.script", "r") as f:
     init_script = f.read()
 
 def connect_to_robot():
     try:
-        s = socket.create_connection(host, port)
+        global s
+        s = socket.create_connection((host, port))
         print("Connected to Robot")
     except Exception as e:
         print(f"Failed to connect to Robot: {e}")
-    return s
 
 def send_to_robot(script: str):
     with open("./database/Fullscript.script", "w") as f:
         f.write(script)
-    s = connect_to_robot()
     try:
         s.sendall(script.encode("UTF8"))
         print("Command sent successfully")
@@ -36,11 +41,10 @@ def send_to_robot(script: str):
         print(f"Failed to send command: {e}")
 
 def find_drink(command: str):
-    drinks = data[0]["drinks"]
+    drinks = database[0]["drinks"]
     for drink in drinks:
         if drink["name"] == command:
-            current_drink = drink['name']
-            return current_drink["positions"]
+            return drink["positions"]
 
 
 def create_script(positions: list):

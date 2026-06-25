@@ -55,8 +55,13 @@ def find_drink(command: str):
         if drink["name"] == command:
             return drink["positions"]
 
+def rg_command():
+    database = open_data()
+    positions = database[2]["RG"]
+    for position in positions:
+        return position['position']
 
-def create_script(positions: list, glass: str):
+def create_script(positions: list, glass: str, rg_positions: list):
     command = ""
     for element in positions:
         command += f"  {element['value']}\n"

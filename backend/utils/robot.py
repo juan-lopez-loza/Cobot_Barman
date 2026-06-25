@@ -45,11 +45,11 @@ def find_glasses():
         if glass['state']:
             return glass
 
-def find_drink(command: str):
+def find_drink(command: int):
     database = open_data()
     drinks = database[0]["drinks"]
     for drink in drinks:
-        if drink["name"] == command:
+        if drink["id"] == command:
             return drink["positions"]
 
 def rg_command():
@@ -74,7 +74,7 @@ def create_script(positions: list, glass: list, rg_positions: list):
             command += f"  {glass_aproach}\n"
         elif element['label'] == 'DropGlass':
             command += f"  {rg_open}\n"
-        else: command += f"  {glass_aproach}\n"
+        else: command += f"  {element['value']}\n"
 
     fullscript = init_script
     fullscript += '\n  popup("Program from pc started")\n'

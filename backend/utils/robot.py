@@ -62,9 +62,22 @@ def rg_command():
         return position['position']
 
 def create_script(positions: list, glass: str, rg_positions: list):
+    rg_close = next(p['value'] for p in rg_positions if p['label'] == 'close')
+    rg_open = next(p['value'] for p in rg_positions if p['label'] == 'open')
+
+    glass_value = glass['value']
+    glass_aproach = glass['aproach']
+
     command = ""
     for element in positions:
-        command += f"  {element['value']}\n"
+        if element['label'] == 'front_to_glass':
+            command += f"  {element['value']}\n"
+            command += f"  {glass_value}\n"
+            command += f"  {rg_close}\n"
+            command += f"  {glass_aproach}\n"
+        elif element['label'] == 'DropGlass':
+            command += f"  {rg_open}\n"
+        else: command += f"  {glass_aproach}\n"
 
     fullscript = init_script
     fullscript += '\n  popup("Program from pc started")\n'

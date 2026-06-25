@@ -30,7 +30,7 @@ def connect_to_robot():
         print(f"Failed to connect to Robot: {e}")
 
 def send_to_robot(script: str):
-    with open("./database/Fullscript.script", "w") as f:
+    with open("./database/script.script", "w") as f:
         f.write(script)
     try:
         s.sendall(script.encode("UTF8"))
@@ -41,12 +41,9 @@ def send_to_robot(script: str):
 def find_glasses():
     database = open_data()
     glasses = database[1]["glasses"]
-    glass_positions = ""
     for glass in glasses:
         if glass['state']:
-            glass_positions += glass['value'] + "\n"
-            glass_positions += glass['aproach'] + "\n"
-            return glass_positions
+            return glass
 
 def find_drink(command: str):
     database = open_data()
@@ -61,7 +58,7 @@ def rg_command():
     for position in positions:
         return position['position']
 
-def create_script(positions: list, glass: str, rg_positions: list):
+def create_script(positions: list, glass: list, rg_positions: list):
     rg_close = next(p['value'] for p in rg_positions if p['label'] == 'close')
     rg_open = next(p['value'] for p in rg_positions if p['label'] == 'open')
 

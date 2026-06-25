@@ -1,10 +1,9 @@
 from fastapi import FastAPI
-import asyncio
 from dotenv import load_dotenv
 from database.db import init_db
 from utils.robot import connect_to_robot
-from api import orders, cocktails, admin
-
+from utils.load_json import open_data
+from api import orders, cocktails
 load_dotenv()
 app = FastAPI()
 app.include_router(orders.router)
@@ -13,6 +12,7 @@ app.include_router(cocktails.router)
 
 @app.on_event("startup")
 async def startup():
-    init_db()
+    #init_db()
+    open_data()
+    connect_to_robot()
     print("Database initialized")
-    await connect_to_robot()

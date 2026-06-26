@@ -14,8 +14,9 @@ class RobotCommand(BaseModel):
 @router.post("/")
 async def send_order(drink_id: int):
     glass = find_glasses()
+    #change_glass_state(glass)
     rg_positions = rg_command()
-    positions = find_drink(drink_id)
-    script = create_script(positions, glass, rg_positions)
+    drink_positions = find_drink(drink_id)
+    script = create_script(drink_positions, glass, rg_positions)
     send_to_robot(script)
     return {"Status": "ok"}

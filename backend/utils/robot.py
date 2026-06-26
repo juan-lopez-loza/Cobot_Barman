@@ -56,11 +56,15 @@ def rg_command():
     for position in positions:
         return position['position']
 
-#def change_glass_state(glass: list):
-    #glass_state = glass['state']
-    #glass_state = False
-    #with open("./database/test.json", "w") as f:
-        #f.write(glass_state)
+def change_glass_state(glass: list):
+    database = open_data()
+    for g in database[1]["glasses"]:
+        if g['label'] == glass['label']:
+            g['state'] = False
+            break
+
+    with open("./database/test.json", "w") as f:
+        json.dump(database, f, indent=2)
 
 def create_script(drink_positions: list, glass: list, rg_positions: list):
     database = open_data()

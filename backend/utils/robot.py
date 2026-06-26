@@ -30,8 +30,6 @@ def connect_to_robot():
         print(f"Failed to connect to Robot: {e}")
 
 def send_to_robot(script: str):
-    with open("./database/script.script", "w") as f:
-        f.write(script)
     try:
         s.sendall(script.encode("UTF8"))
         print("Command sent successfully")
@@ -58,22 +56,42 @@ def rg_command():
     for position in positions:
         return position['position']
 
-def create_script(positions: list, glass: list, rg_positions: list):
+#def change_glass_state(glass: list):
+    #glass_state = glass['state']
+    #glass_state = False
+    #with open("./database/test.json", "w") as f:
+        #f.write(glass_state)
+
+def create_script(drink_positions: list, glass: list, rg_positions: list):
+    database = open_data()
     rg_close = next(p['value'] for p in rg_positions if p['label'] == 'close')
     rg_open = next(p['value'] for p in rg_positions if p['label'] == 'open')
 
     glass_value = glass['value']
     glass_aproach = glass['aproach']
 
+    drink_ds = next(p['value'] for p in drink_positions if p['label'] == 'DS')
+    drink_us = next(p['value'] for p in drink_positions if p['label'] == 'US')
+
+    script_step = database[3]["script"][0]['positions']
+
     command = ""
-    for element in positions:
+    for element in script_step:
         if element['label'] == 'front_to_glass':
             command += f"  {element['value']}\n"
             command += f"  {glass_value}\n"
             command += f"  {rg_close}\n"
             command += f"  {glass_aproach}\n"
-        elif element['label'] == 'DropGlass':
-            command += f"  {rg_open}\n"
+
+        elif element['label'] == 'home':
+            command += f" {element['value']}\n"
+            command += f"  {drink_ds}\n"
+            command += f"  {drink_us}\n"
+
+        elif element['label'] ==  'TimeSyrup':
+            command += f" {element['value']}\n"
+            command += f"  {drink_ds}\n"
+        elif element['label'] == 'DropGlass':command += f"  {rg_open}\n"
         else: command += f"  {element['value']}\n"
 
     fullscript = init_script

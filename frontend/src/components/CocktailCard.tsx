@@ -46,8 +46,6 @@ const CocktailCard: FC<CocktailCardProps> = ({
   }, [status, cocktail.id, cocktail.name, onOrderSuccess, onOrderError]);
 
   const icon = CARD_ICONS[index % CARD_ICONS.length];
-  const cardNumber = String(index + 1).padStart(2, '0');
-  const stepCount = cocktail.steps?.length ?? 0;
 
   const cardClasses = [
     'cocktail-card',
@@ -77,9 +75,6 @@ const CocktailCard: FC<CocktailCardProps> = ({
       {/* Icône décorative en arrière-plan */}
       <span className="cocktail-card__bg-icon" aria-hidden="true">{icon}</span>
 
-      {/* Numéro de carte */}
-      <span className="cocktail-card__number">#{cardNumber}</span>
-
       {/* Overlay feedback (loading / success / error) */}
       {status !== 'idle' && (
         <div
@@ -105,28 +100,13 @@ const CocktailCard: FC<CocktailCardProps> = ({
           )}
         </div>
       )}
-
-      {/* Contenu principal */}
       <div className="cocktail-card__content">
-        <h2 className="cocktail-card__name">{cocktail.name}</h2>
-
-        {stepCount > 0 && (
-          <p className="cocktail-card__description">
-            Recette en {stepCount} étape{stepCount > 1 ? 's' : ''}, préparée avec précision par le robot.
-          </p>
-        )}
+        <h2 className="cocktail-card__name">{cocktail.name[0].toUpperCase()}{cocktail.name.slice(1).toLowerCase()}</h2>
 
         <div className="cocktail-card__footer">
           <span className="cocktail-card__cta" aria-hidden="true">
             Commander →
           </span>
-
-          {stepCount > 0 && (
-            <div className="cocktail-card__steps">
-              <span className="cocktail-card__steps-dot" />
-              {stepCount} étape{stepCount > 1 ? 's' : ''}
-            </div>
-          )}
         </div>
       </div>
     </article>

@@ -32,7 +32,6 @@ const ErrorState: FC<{ message: string; onRetry: () => void }> = ({
   onRetry,
 }) => (
   <div className="state-container">
-    <div className="state-container__icon">⚡</div>
     <h2 className="state-container__title">Connexion impossible</h2>
     <p className="state-container__text">{message}</p>
     <button className="btn btn--primary" onClick={onRetry} id="btn-retry-load">
@@ -60,7 +59,6 @@ const HomePage: FC<HomePageProps> = ({ onOrderSuccess, onOrderError }) => {
     <main id="main-content">
     <section className="hero">
       <div className="hero__badge" aria-label="Propulsé par robotique">
-        <span className="hero__badge-dot" aria-hidden="true" />
         Robotique industrielle
       </div>
 

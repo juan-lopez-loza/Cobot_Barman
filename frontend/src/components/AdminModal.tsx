@@ -75,9 +75,6 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
       >
         {/* Header */}
         <div className="modal__header">
-          <div>
-            <div className="modal__icon" aria-hidden="true">🔐</div>
-          </div>
           <button
             id="btn-close-admin-modal"
             className="modal__close"

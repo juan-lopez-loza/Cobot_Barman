@@ -67,11 +67,6 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
     >
       <div
         className="modal"
-        style={
-          isShaking
-            ? { animation: 'scaleIn 0.3s ease, shake 0.5s ease' }
-            : undefined
-        }
       >
         {/* Header */}
         <div className="modal__header">

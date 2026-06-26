@@ -574,7 +574,6 @@ button {
   border: 1px solid var(--color-border);
   box-shadow: 0 24px 60px rgba(60, 20, 120, 0.18), 0 4px 20px rgba(0,0,0,0.08);
   overflow: hidden;
-  animation: scaleIn 0.3s var(--transition-spring);
 }
 
 .modal__header {

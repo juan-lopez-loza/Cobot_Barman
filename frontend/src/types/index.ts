@@ -4,6 +4,7 @@
 
 /** Modèle d'un cocktail tel que retourné par le backend */
 export interface Cocktail {
+  id: number;
   name: string;
 }
 

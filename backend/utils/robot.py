@@ -1,6 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
+from fastapi import HTTPException
 import socket
 from email.header import UTF8
 
@@ -42,6 +43,7 @@ def find_glasses():
     for glass in glasses:
         if glass['state']:
             return glass
+        else: raise HTTPException(status_code=404, detail="No glasses available")
 
 def find_drink(command: int):
     database = open_data()

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from database.db import engine, Cocktail, Admin
+from utils.load_json import open_data
 
 router = APIRouter(prefix="/cocktails", tags=["cocktails"])
 
@@ -17,7 +18,8 @@ async def get_cocktail(db: Session = Depends(get_db)):
     statement = select(Cocktail)
     results = db.exec(statement)
     cocktails = results.all()
-    return cocktails
+    database = open_data()
+    return database[0]['drinks']
 
 @router.post("/new_cocktail", tags=["cocktails"])
 async def add_cocktail(payload: CocktailModel, db: Session = Depends(get_db)):

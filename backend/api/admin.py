@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import jwt
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from database.db import engine, Admin
@@ -10,11 +10,10 @@ import bcrypt
 import os
 
 load_dotenv()
+security = HTTPBearer()
 
 key = os.getenv("SECRET_KEY")
 algorithm = os.getenv("ALGORITHM")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/admin/login")
 
 def get_db():
     with Session(engine) as session:
@@ -53,15 +52,18 @@ async def login_admin(login: LoginRequest, db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-
-def verify_token(token: str = Depends(oauth2_scheme)):
+async def verif_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
     try:
-        payload = jwt.decode(token, key, algorithms=[algorithm])
-        username: str = payload.get("sub")
+        payload = jwt.decode(token, key, algorithms=algorithm)
+        username = payload.get("sub")
+
         if username is None:
-            raise HTTPException(status_code=401, detail="token is invalid")
+            raise HTTPException(status_code=401, detail="ID invalid")
+
         return username
+
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="token is expired")
+        raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")

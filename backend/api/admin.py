@@ -54,3 +54,14 @@ async def login_admin(login: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
+def verify_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, key, algorithms=[algorithm])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="token is invalid")
+        return username
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="token is expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")

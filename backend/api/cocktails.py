@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from pydantic import BaseModel
+from api.admin import verify_token, oauth2_scheme
 from database.db import engine, Cocktail, Admin
 from utils.load_json import open_data
 
@@ -22,7 +23,7 @@ async def get_cocktail(db: Session = Depends(get_db)):
     return database[0]['drinks']
 
 @router.post("/new_cocktail", tags=["cocktails"])
-async def add_cocktail(payload: CocktailModel, db: Session = Depends(get_db)):
+async def add_cocktail( payload: CocktailModel, username: str = Depends(verify_token()), db: Session = Depends(get_db)):
     new_cocktail = Cocktail(name=payload.name)
     db.add(new_cocktail)
     db.commit()

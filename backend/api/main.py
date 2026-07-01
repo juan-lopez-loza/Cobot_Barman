@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from database.db import init_db
-from utils.robot import connect_to_robot
-from utils.load_json import open_data
-from api import orders, cocktails, admin
+from app.utils.robot import connect_to_robot
+from app.utils.load_json import open_data
+from api import orders, cocktails, admin, glasses
 load_dotenv()
 app = FastAPI()
 app.include_router(orders.router)
 app.include_router(cocktails.router)
 app.include_router(admin.router)
+app.include_router(glasses.router)
 
 @app.on_event("startup")
 async def startup():

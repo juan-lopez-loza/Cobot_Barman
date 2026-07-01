@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from api.admin import verif_token
 from database.db import engine, Cocktail, Admin
-from utils.load_json import open_data
+from app.utils.load_json import open_data
 
 router = APIRouter(prefix="/cocktails", tags=["cocktails"])
 

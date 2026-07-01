@@ -1,6 +1,6 @@
 import json
 
-with open("./robot_src/init_onrobot.script", "r") as f:
+with open("./app/robot_src/init_onrobot.script", "r") as f:
     init_script = f.read()
 
 def open_data():

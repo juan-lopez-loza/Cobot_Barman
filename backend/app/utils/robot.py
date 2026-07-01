@@ -10,7 +10,15 @@ load_dotenv()
 host = os.getenv("ROBOT_HOST")
 port = os.getenv("ROBOT_PORT")
 
-with open("./robot_src/init_onrobot.script", "r") as f:
+class RobotState:
+    unknown = 0
+    ready = 1
+    receiving_program = 2
+    program_started = 3
+    program_ended = 4
+    error = 5
+
+with open("./app/robot_src/init_onrobot.script", "r") as f:
     init_script = f.read()
 
 def open_data():
@@ -19,7 +27,7 @@ def open_data():
         database = json.loads(json_data)
         return database
 
-with open("./robot_src/init_onrobot.script", "r") as f:
+with open("./app/robot_src/init_onrobot.script", "r") as f:
     init_script = f.read()
 
 def connect_to_robot():
@@ -37,14 +45,6 @@ def send_to_robot(script: str):
     except Exception as e:
         print(f"Failed to send command: {e}")
 
-def find_glasses():
-    database = open_data()
-    glasses = database[1]["glasses"]
-    for glass in glasses:
-        if glass['state']:
-            return glass
-        else: raise HTTPException(status_code=404, detail="No glasses available")
-
 def find_drink(command: int):
     database = open_data()
     drinks = database[0]["drinks"]
@@ -57,16 +57,6 @@ def rg_command():
     positions = database[2]["RG"]
     for position in positions:
         return position['position']
-
-def change_glass_state(glass: list):
-    database = open_data()
-    for g in database[1]["glasses"]:
-        if g['label'] == glass['label']:
-            g['state'] = False
-            break
-
-    with open("./database/test.json", "w") as f:
-        json.dump(database, f, indent=2)
 
 def create_script(drink_positions: list, glass: list, rg_positions: list):
     database = open_data()

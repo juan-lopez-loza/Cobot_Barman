@@ -28,4 +28,4 @@ def glasses_state(glasses_id: int, glasses_state: bool):
             with open('./database/test.json', 'w') as f:
                 json.dump(database, f, indent=2)
             return {"message": "Glass state changed with success"}
-    raise HTTPException(status_code=404, detail="Glasses not found")
+    raise HTTPException(status_code=404, detail="Glass not found")

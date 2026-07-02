@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from api.admin import verif_token
 from database.db import engine, Cocktail, Admin
 from app.utils.load_json import open_data
+from app.utils.cocktail import edit_cocktail_value
 
 router = APIRouter(prefix="/cocktails", tags=["cocktails"])
 
@@ -29,3 +30,7 @@ async def add_cocktail( payload: CocktailModel, username: str = Depends(verif_to
     db.commit()
     db.refresh(new_cocktail)
     return await get_cocktail(db=db)
+
+@router.put("/edit/cocktail_id", tags=["cocktails"])
+def edit_cocktail(cocktail_id: int,  username: str = Depends(verif_token), cocktail_name: str | None = None, cocktail_move1: str | None = None, cocktail_move2: str | None = None):
+    return edit_cocktail_value(cocktail_id, cocktail_name, cocktail_move1, cocktail_move2)

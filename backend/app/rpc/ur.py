@@ -17,12 +17,12 @@ class UrMethods:
     """
 
     def __init__(self):
+        print("[UrMethods] Instance créée")
         self._lock = threading.Lock()
         self._status: RobotStatus = RobotStatus.IDLE
         self._current_command_id: Optional[int] = None
         self._last_update: Optional[str] = None
         self._on_finished_callback: Optional[Callable[[], None]] = None
-
 
     def set_status_program_started(self) -> bool:
         with self._lock:

@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 from dotenv import load_dotenv
 from fastapi import HTTPException
 import socket
@@ -10,6 +11,8 @@ load_dotenv()
 
 host = os.getenv("ROBOT_HOST")
 port = os.getenv("ROBOT_PORT")
+backend_host = os.getenv("BACKEND_HOST")
+backend_rpc_port = int(os.getenv("BACKEND_RPC_PORT"))
 
 class RobotState:
     unknown = 0
@@ -155,8 +158,11 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
             command += f"  {element['value']}\n"
 
     fullscript = init_script
-    fullscript += '\n  popup("Program from pc started")\n'
+    fullscript += f'\n  barman_rpc = rpc_factory("xmlrpc", "http://{backend_host}:{backend_rpc_port}")\n'
+    fullscript += '  barman_rpc.set_status_program_started()\n'
+    fullscript += '  popup("Program from pc started")\n'
     fullscript += command
+    fullscript += '  barman_rpc.set_status_program_finished()\n'
     fullscript += '  popup("Program from pc ended")\n'
     fullscript += "end\n"
     return fullscript
@@ -165,18 +171,29 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
 # ---- Gestion de la queue de commandes ----
 
 command_queue: Queue = Queue()
+_dispatch_lock = threading.Lock()
 
 
 def dispatch_next_command():
-    if ur_methods.is_busy():
-        return
-    if not command_queue.empty():
-        command = command_queue.get()
-        ur_methods.set_current_command(command["id"])
-        send_to_robot(command["script"])
+    """Envoie la prochaine commande au robot si celui-ci est disponible.
+    Protégé par un verrou pour éviter les race conditions lors d'appels concurrents.
+    """
+    with _dispatch_lock:
+        if ur_methods.is_busy():
+            print(f"[Queue] Robot occupé, commande mise en attente. Taille queue: {command_queue.qsize()}")
+            return
+        if not command_queue.empty():
+            command = command_queue.get()
+            print(f"[Queue] Envoi commande id={command['id']} au robot")
+            ur_methods.set_current_command(command["id"])
+            ur_methods.set_status_program_started()
+            send_to_robot(command["script"])
+        else:
+            print("[Queue] Aucune commande en attente.")
 
 
 def on_program_finished():
+    print("[Queue] Programme terminé, vérification de la queue...")
     dispatch_next_command()
 
 

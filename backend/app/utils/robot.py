@@ -69,95 +69,126 @@ def rg_command() -> list:
         return position['position']
     raise HTTPException(status_code=404, detail="RG positions not found")
 
-def get_time_value(database: list, label: str) -> str:
-    times = database[3]["time"]
-    for t in times:
+def _get_pos(positions: list, label: str) -> str:
+    for p in positions:
+        if p["label"] == label:
+            return p["value"]
+    raise HTTPException(status_code=500, detail=f"Position '{label}' introuvable dans le JSON")
+
+
+def _get_time(database: list, label: str) -> str:
+    for t in database[3]["time"]:
         if t["label"] == label:
             return t["value"]
-    raise HTTPException(status_code=404, detail=f"Time '{label}' not found")
-
-def build_water_segment(database: list, time_label: str) -> str:
-    """
-    Construit le segment 'eau' en respectant l'ordre déclaré dans le JSON
-    (GoWater1 -> GoWater2 -> triggerWater(True) -> [attente] -> triggerWater(False) -> GoBack1 -> GoBack2).
-    Le temps d'attente (TimeWater ou TimeOnlyWater) est inséré juste après le déclenchement True.
-    """
-    water_drink = find_drink_by_name("water")
-    positions = water_drink["positions"]
-    time_value = get_time_value(database, time_label)
-
-    segment = ""
-    for p in positions:
-        segment += f"  {p['value']}\n"
-        if p["label"] == "triggerWater" and "True" in p["value"]:
-            segment += f"  {time_value}\n"
-
-    return segment
+    raise HTTPException(status_code=500, detail=f"Temps '{label}' introuvable dans le JSON")
 
 
-def build_drink_segment(database: list, drink: dict) -> str:
-    """
-    Construit le segment de script propre à la boisson commandée :
-    - sirop : DS -> US -> TimeSyrup -> DS, puis eau optionnelle si drink['water'] est True
-    - eau seule (drink 'water') : GoWater1 -> GoWater2 -> trigger(True) -> TimeOnlyWater -> trigger(False) -> GoBack1 -> GoBack2
-    """
+def build_syrup_segment(drink: dict, time_syrup: str) -> str:
     positions = drink["positions"]
     labels = {p["label"] for p in positions}
 
+    ds = _get_pos(positions, "DS")
+    us = _get_pos(positions, "US")
+
     segment = ""
 
-    if "DS" in labels and "US" in labels:
-        drink_ds = next(p["value"] for p in positions if p["label"] == "DS")
-        drink_us = next(p["value"] for p in positions if p["label"] == "US")
-        time_syrup = get_time_value(database, "TimeSyrup")
+    if "GoToSyrup1" in labels and "GotoSyrup2" in labels:
+        goto1 = _get_pos(positions, "GoToSyrup1")
+        goto2 = _get_pos(positions, "GotoSyrup2")
 
-        segment += f"  {drink_ds}\n"
-        segment += f"  {drink_us}\n"
+        segment += f"  {goto1}\n"
+        segment += f"  {goto2}\n"
+        segment += f"  {ds}\n"
+        segment += f"  {us}\n"
         segment += f"  {time_syrup}\n"
-        segment += f"  {drink_ds}\n"
+        segment += f"  {ds}\n"
+        segment += f"  {goto2}\n"
+        segment += f"  {goto1}\n"
+    elif "GoToSyrup" in labels:
+        goto = _get_pos(positions, "GoToSyrup")
 
-        if drink.get("water"):
-            segment += build_water_segment(database, "TimeWater")
-    elif "triggerWater" in labels:
-        segment += build_water_segment(database, "TimeOnlyWater")
+        segment += f"  {goto}\n"
+        segment += f"  {ds}\n"
+        segment += f"  {us}\n"
+        segment += f"  {time_syrup}\n"
+        segment += f"  {ds}\n"
+        segment += f"  {goto}\n"
     else:
-        raise HTTPException(status_code=400, detail="Unknown drink position layout")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Drink '{drink['name']}' (id={drink['id']}) n'a ni GoToSyrup1 ni GoToSyrup dans ses positions"
+        )
+    return segment
+
+def build_water_segment(database: list, time_label: str) -> str:
+    water_drink = find_drink_by_name("water")
+    positions = water_drink["positions"]
+    time_value = _get_time(database, time_label)
+
+    trigger_true  = next(p["value"] for p in positions if p["label"] == "triggerWater" and "True"  in p["value"])
+    trigger_false = next(p["value"] for p in positions if p["label"] == "triggerWater" and "False" in p["value"])
+
+    segment = ""
+    segment += f"  {_get_pos(positions, 'ToWater1')}\n"
+    segment += f"  {_get_pos(positions, 'ToWater2')}\n"
+    segment += f"  {_get_pos(positions, 'DSWater')}\n"
+    segment += f"  {trigger_true}\n"
+    segment += f"  {time_value}\n"
+    segment += f"  {trigger_false}\n"
+    segment += f"  {_get_pos(positions, 'BackWater1')}\n"
+    segment += f"  {_get_pos(positions, 'BackWater2')}\n"
 
     return segment
 
 def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
     database = open_data()
 
-    rg_close = next(p["value"] for p in rg_positions if p["label"] == "close")
-    rg_open = next(p["value"] for p in rg_positions if p["label"] == "open")
+    global_positions = database[5]["positions"]
+    home          = _get_pos(global_positions, "home")
+    front_glass   = _get_pos(global_positions, "front_to_glass")
+    go_back       = _get_pos(global_positions, "GoBack")
 
-    glass_value = glass["value"]
+    rg_close = next(p["value"] for p in rg_positions if p["label"] == "close")
+    rg_open  = next(p["value"] for p in rg_positions if p["label"] == "open")
+
+    glass_value   = glass["value"]
     glass_aproach = glass["aproach"]
 
-    drink_segment = build_drink_segment(database, drink)
+    drops     = database[4]["bar-drops"][0]
+    drop1_pos = drops["drop1"]
+    drop1     = _get_pos(drop1_pos, "Drop1")
+    backdrop1 = _get_pos(drop1_pos, "BackDrop1")
 
-    script_step = database[4]["script"][0]["positions"]
+    time_syrup = _get_time(database, "TimeSyrup")
+
+    is_water_only = drink["name"].lower() == "water"
 
     command = ""
-    for element in script_step:
-        if element["label"] == "front_to_glass":
-            command += f"  {element['value']}\n"
-            command += f"  {glass_value}\n"
-            command += f"  {rg_close}\n"
-            command += f"  {glass_aproach}\n"
 
-        elif element["label"] == "home":
-            command += f"  {element['value']}\n"
-            command += drink_segment
+    command += f"  {home}\n"
+    command += f"  {front_glass}\n"
+    command += f"  {glass_value}\n"
+    command += f"  {rg_close}\n"
+    command += f"  {glass_aproach}\n"
+    command += f"  {go_back}\n"
+    command += f"  {home}\n"
 
-        elif element["label"] == "DropGlass":
-            command += f"  {element['value']}\n"
-            command += f"  {rg_open}\n"
+    if not is_water_only:
+        command += build_syrup_segment(drink, time_syrup)
+        command += f"  {home}\n"
 
-        else:
-            command += f"  {element['value']}\n"
+    if is_water_only:
+        command += build_water_segment(database, "TimeOnlyWater")
+    elif drink.get("water"):
+        command += build_water_segment(database, "TimeWater")
+    command += f"  {home}\n"
 
-    fullscript = init_script
+    command += f"  {drop1}\n"
+    command += f"  {rg_open}\n"
+    command += f"  {backdrop1}\n"
+    command += f"  {home}\n"
+
+    fullscript  = init_script
     fullscript += f'\n  barman_rpc = rpc_factory("xmlrpc", "http://{backend_host}:{backend_rpc_port}")\n'
     fullscript += '  barman_rpc.set_status_program_started()\n'
     fullscript += '  popup("Program from pc started")\n'
@@ -165,19 +196,16 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
     fullscript += '  barman_rpc.set_status_program_finished()\n'
     fullscript += '  popup("Program from pc ended")\n'
     fullscript += "end\n"
+
+    print(f"[Script] Généré pour drink='{drink['name']}' (id={drink['id']}), verre='{glass.get('label', '?')}'")
     return fullscript
 
-
-# ---- Gestion de la queue de commandes ----
 
 command_queue: Queue = Queue()
 _dispatch_lock = threading.Lock()
 
 
 def dispatch_next_command():
-    """Envoie la prochaine commande au robot si celui-ci est disponible.
-    Protégé par un verrou pour éviter les race conditions lors d'appels concurrents.
-    """
     with _dispatch_lock:
         if ur_methods.is_busy():
             print(f"[Queue] Robot occupé, commande mise en attente. Taille queue: {command_queue.qsize()}")

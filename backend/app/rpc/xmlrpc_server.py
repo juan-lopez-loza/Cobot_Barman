@@ -7,11 +7,14 @@ PORT = 8080
 
 
 def _run_server():
-    server = SimpleXMLRPCServer((HOST, PORT), allow_none=True, logRequests=False)
-    server.register_introspection_functions()
-    server.register_instance(ur_methods)
-    print(f"[RPC] Serveur XML-RPC en écoute sur {HOST}:{PORT}")
-    server.serve_forever()
+    try:
+        server = SimpleXMLRPCServer((HOST, PORT), allow_none=True, logRequests=True)
+        server.register_introspection_functions()
+        server.register_instance(ur_methods)
+        print(f"[RPC] Serveur XML-RPC en écoute sur {HOST}:{PORT}")
+        server.serve_forever()
+    except OSError as e:
+        print(f"[RPC] Impossible de démarrer le serveur XML-RPC sur {HOST}:{PORT} : {e}")
 
 
 def start_xmlrpc_server() -> threading.Thread:

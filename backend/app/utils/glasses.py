@@ -5,11 +5,12 @@ from app.utils.load_json import open_data
 database = open_data()
 
 def find_glasses():
+    database = open_data()
     glasses = database[1]["glasses"]
     for glass in glasses:
         if glass['state']:
             return glass
-    else: raise HTTPException(status_code=404, detail="No glasses available")
+    raise HTTPException(status_code=404, detail="No glasses available")
 
 def change_glass_state(glass: list):
     for g in database[1]["glasses"]:

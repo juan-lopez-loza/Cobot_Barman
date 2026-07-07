@@ -1,6 +1,7 @@
 import os
 import json
 import threading
+import time
 from dotenv import load_dotenv
 from fastapi import HTTPException
 import socket
@@ -191,10 +192,8 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
     fullscript  = init_script
     fullscript += f'\n  barman_rpc = rpc_factory("xmlrpc", "http://{backend_host}:{backend_rpc_port}")\n'
     fullscript += '  barman_rpc.set_status_program_started()\n'
-    fullscript += '  popup("Program from pc started")\n'
     fullscript += command
     fullscript += '  barman_rpc.set_status_program_finished()\n'
-    fullscript += '  popup("Program from pc ended")\n'
     fullscript += "end\n"
 
     print(f"[Script] Généré pour drink='{drink['name']}' (id={drink['id']}), verre='{glass.get('label', '?')}'")
@@ -214,14 +213,16 @@ def dispatch_next_command():
             command = command_queue.get()
             print(f"[Queue] Envoi commande id={command['id']} au robot")
             ur_methods.set_current_command(command["id"])
-            ur_methods.set_status_program_started()
+            ur_methods.set_status_running_preemptive()
             send_to_robot(command["script"])
         else:
             print("[Queue] Aucune commande en attente.")
 
 
 def on_program_finished():
-    print("[Queue] Programme terminé, vérification de la queue...")
+    print("[Queue] Programme terminé. Pause de sécurité de 2 secondes avant la suite...")
+    time.sleep(2.0)
+    print("[Queue] Vérification de la queue...")
     dispatch_next_command()
 
 

@@ -11,11 +11,6 @@ class RobotStatus(str, Enum):
 
 
 class UrMethods:
-    """
-    Méthodes exposées via XML-RPC.
-    C'est le robot (URScript) qui appelle ces fonctions pour reporter son état.
-    """
-
     def __init__(self):
         print("[UrMethods] Instance créée")
         self._lock = threading.Lock()
@@ -23,6 +18,10 @@ class UrMethods:
         self._current_command_id: Optional[int] = None
         self._last_update: Optional[str] = None
         self._on_finished_callback: Optional[Callable[[], None]] = None
+
+    def set_status_running_preemptive(self) -> None:
+        with self._lock:
+            self._status = RobotStatus.RUNNING
 
     def set_status_program_started(self) -> bool:
         with self._lock:
@@ -39,7 +38,15 @@ class UrMethods:
         print(f"[UR] Programme terminé à {self._last_update}")
 
         if self._on_finished_callback:
-            self._on_finished_callback()
+            # On lance le callback dans un thread séparé pour ne PAS bloquer
+            # le thread XML-RPC (le robot attend encore la réponse RPC).
+            # Sans ça, send_to_robot() serait appelé depuis le handler RPC,
+            # ce qui écrit sur le socket pendant que le robot attend sa réponse → erreur robot.
+            threading.Thread(
+                target=self._on_finished_callback,
+                daemon=True,
+                name="on-program-finished"
+            ).start()
 
         return True
 
@@ -67,7 +74,6 @@ class UrMethods:
             self._current_command_id = command_id
 
     def register_on_finished(self, callback: Callable[[], None]) -> None:
-        """Permet au gestionnaire de queue de s'abonner à la fin d'exécution."""
         self._on_finished_callback = callback
 
 

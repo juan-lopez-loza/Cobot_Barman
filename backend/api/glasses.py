@@ -15,6 +15,10 @@ def get_glasses(username: str = Depends(verif_token)):
     database = open_data()
     return database[1]['glasses']
 
-@router.put("/edit_glasses")
+@router.put("/edit_glasses/{glasses_id}")
 def edit_glasses(glasses_id: int, state: bool, username: str = Depends(verif_token)):
     return glasses_state(glasses_id, state)
+
+@router.post("/add_glasses/{glasses_id}")
+def add_glasses():
+    return glasses_state()

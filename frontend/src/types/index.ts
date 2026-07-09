@@ -46,3 +46,15 @@ export interface Toast {
 export interface AdminAuth {
   isAuthenticated: boolean;
 }
+
+/** Modèle d'un verre tel que retourné par le backend */
+export interface Glass {
+  id: number;
+  state: boolean;
+}
+
+/** Token d'authentification */
+export interface Token {
+  access_token: string;
+  token_type: string;
+}

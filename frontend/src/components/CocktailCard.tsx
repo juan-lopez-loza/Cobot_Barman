@@ -14,6 +14,8 @@ interface CocktailCardProps {
   index: number;
   onOrderSuccess?: (cocktailName: string) => void;
   onOrderError?: (message: string) => void;
+  isAdmin?: boolean;
+  onEditClick?: () => void;
 }
 
 const CocktailCard: FC<CocktailCardProps> = ({
@@ -21,11 +23,13 @@ const CocktailCard: FC<CocktailCardProps> = ({
   index,
   onOrderSuccess,
   onOrderError,
+  isAdmin,
+  onEditClick,
 }) => {
   const [status, setStatus] = useState<CardStatus>('idle');
 
   const handleClick = useCallback(async () => {
-    if (status !== 'idle') return;
+    if (status !== 'idle' || isAdmin) return;
 
     setStatus('loading');
 
@@ -43,7 +47,12 @@ const CocktailCard: FC<CocktailCardProps> = ({
       onOrderError?.(message);
       setTimeout(() => setStatus('idle'), 3000);
     }
-  }, [status, cocktail.id, cocktail.name, onOrderSuccess, onOrderError]);
+  }, [status, cocktail.id, cocktail.name, onOrderSuccess, onOrderError, isAdmin]);
+
+  const handleEdit = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    onEditClick?.();
+  }, [onEditClick]);
 
   const icon = CARD_ICONS[index % CARD_ICONS.length];
 
@@ -104,9 +113,20 @@ const CocktailCard: FC<CocktailCardProps> = ({
         <h2 className="cocktail-card__name">{cocktail.name[0].toUpperCase()}{cocktail.name.slice(1).toLowerCase()}</h2>
 
         <div className="cocktail-card__footer">
-          <span className="cocktail-card__cta" aria-hidden="true">
-            Commander →
-          </span>
+          {isAdmin ? (
+            <button
+              className="btn btn--secondary"
+              style={{ padding: '6px 12px', fontSize: '0.9rem', zIndex: 10, position: 'relative' }}
+              onClick={handleEdit}
+              aria-label={`Modifier le cocktail ${cocktail.name}`}
+            >
+              Modifier ✏️
+            </button>
+          ) : (
+            <span className="cocktail-card__cta" aria-hidden="true">
+              Commander →
+            </span>
+          )}
         </div>
       </div>
     </article>

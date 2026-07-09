@@ -2,14 +2,16 @@
 // pages/HomePage.tsx — Page principale Bento Grid
 // ============================================================
 
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import BentoGrid from '@/components/BentoGrid';
 import { useCocktails } from '@/hooks/useCocktails';
+import EditCocktailModal from '@/components/admin/EditCocktailModal';
 
 
 interface HomePageProps {
   onOrderSuccess: (name: string) => void;
   onOrderError: (message: string) => void;
+  isAdmin?: boolean;
 }
 
 // ── État de chargement (skeleton Bento) ──────────────────────
@@ -52,8 +54,9 @@ const EmptyState: FC = () => (
 );
 
 // ── Page principale ───────────────────────────────────────────
-const HomePage: FC<HomePageProps> = ({ onOrderSuccess, onOrderError }) => {
+const HomePage: FC<HomePageProps> = ({ onOrderSuccess, onOrderError, isAdmin }) => {
   const { cocktails, isLoading, error, refetch } = useCocktails();
+  const [editingCocktail, setEditingCocktail] = useState<any>(null);
 
   return (
     <main id="main-content">
@@ -89,6 +92,21 @@ const HomePage: FC<HomePageProps> = ({ onOrderSuccess, onOrderError }) => {
           cocktails={cocktails}
           onOrderSuccess={onOrderSuccess}
           onOrderError={onOrderError}
+          isAdmin={isAdmin}
+          onEditCocktail={setEditingCocktail}
+        />
+      )}
+
+      {/* Edit Modal pour Admin */}
+      {isAdmin && editingCocktail && (
+        <EditCocktailModal
+          cocktail={editingCocktail}
+          onClose={() => setEditingCocktail(null)}
+          onSuccess={() => {
+            // Recharger la liste depuis le backend
+            refetch();
+          }}
+          onError={onOrderError}
         />
       )}
     </main>

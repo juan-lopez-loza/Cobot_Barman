@@ -10,12 +10,16 @@ interface BentoGridProps {
   cocktails: Cocktail[];
   onOrderSuccess: (name: string) => void;
   onOrderError: (message: string) => void;
+  isAdmin?: boolean;
+  onEditCocktail?: (cocktail: Cocktail) => void;
 }
 
 const BentoGrid: FC<BentoGridProps> = ({
   cocktails,
   onOrderSuccess,
   onOrderError,
+  isAdmin,
+  onEditCocktail,
 }) => {
   return (
     <section className="bento-section container">
@@ -34,6 +38,8 @@ const BentoGrid: FC<BentoGridProps> = ({
             index={index}
             onOrderSuccess={onOrderSuccess}
             onOrderError={onOrderError}
+            isAdmin={isAdmin}
+            onEditClick={() => onEditCocktail?.(cocktail)}
           />
         ))}
       </div>

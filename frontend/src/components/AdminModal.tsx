@@ -3,9 +3,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback, type FC } from 'react';
-
-// Mot de passe admin (côté frontend uniquement — le backend n'a pas d'endpoint auth)
-const ADMIN_PASSWORD = 'cobot2024';
+import { loginAdmin } from '@/services/api';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -14,13 +12,16 @@ interface AdminModalProps {
 }
 
 const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isShaking, setIsShaking] = useState<boolean>(false);
 
   // Reset du formulaire à l'ouverture
   useEffect(() => {
     if (isOpen) {
+      setUsername('');
       setPassword('');
       setError('');
     }
@@ -36,21 +37,30 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
   }, [isOpen, onClose]);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
+      
+      if (!username.trim() || !password.trim()) {
+        setError('Veuillez remplir tous les champs.');
+        return;
+      }
 
-      if (password === ADMIN_PASSWORD) {
+      setIsLoading(true);
+      try {
+        await loginAdmin({ username, password });
         setError('');
         onSuccess();
         onClose();
-      } else {
-        setError('Mot de passe incorrect. Réessayez.');
+      } catch (err: any) {
+        setError('Identifiants incorrects. Réessayez.');
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
         setPassword('');
+      } finally {
+        setIsLoading(false);
       }
     },
-    [password, onSuccess, onClose],
+    [username, password, onSuccess, onClose],
   );
 
   if (!isOpen) return null;
@@ -66,7 +76,7 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
       aria-labelledby="admin-modal-title"
     >
       <div
-        className="modal"
+        className={`modal ${isShaking ? 'modal--shake' : ''}`}
       >
         {/* Header */}
         <div className="modal__header">
@@ -86,12 +96,31 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
             Accès <span className="gradient-text">Administrateur</span>
           </h2>
           <p className="modal__subtitle">
-            Entrez le mot de passe pour accéder à l'espace de gestion des cocktails.
+            Entrez vos identifiants pour accéder à l'espace de gestion.
           </p>
         </div>
 
         {/* Formulaire */}
         <form className="modal__body" onSubmit={handleSubmit} noValidate>
+          <div className="form-group">
+            <label className="form-label" htmlFor="admin-username">
+              Pseudo
+            </label>
+            <input
+              id="admin-username"
+              type="text"
+              className="form-input"
+              placeholder="Ex: admin"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setError('');
+              }}
+              autoFocus
+              autoComplete="username"
+            />
+          </div>
+
           <div className="form-group">
             <label className="form-label" htmlFor="admin-password">
               Mot de passe
@@ -106,7 +135,6 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
                 setPassword(e.target.value);
                 setError('');
               }}
-              autoFocus
               autoComplete="current-password"
               aria-describedby={error ? 'admin-password-error' : undefined}
               aria-invalid={!!error}
@@ -125,6 +153,7 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
               id="btn-cancel-admin"
               className="btn btn--secondary btn--full"
               onClick={onClose}
+              disabled={isLoading}
             >
               Annuler
             </button>
@@ -132,9 +161,9 @@ const AdminModal: FC<AdminModalProps> = ({ isOpen, onClose, onSuccess }) => {
               type="submit"
               id="btn-confirm-admin"
               className="btn btn--primary btn--full"
-              disabled={!password.trim()}
+              disabled={!password.trim() || !username.trim() || isLoading}
             >
-              Confirmer
+              {isLoading ? 'Connexion...' : 'Confirmer'}
             </button>
           </div>
         </form>

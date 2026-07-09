@@ -9,7 +9,21 @@ import type {
   CreateCocktailPayload,
   UpdateCocktailPayload,
   OrderResponse,
+  Glass,
+  Token,
 } from '@/types';
+
+// Stockage du token en mémoire et localStorage pour la persistance
+let authToken: string | null = localStorage.getItem('cobot_admin_token');
+
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+  if (token) {
+    localStorage.setItem('cobot_admin_token', token);
+  } else {
+    localStorage.removeItem('cobot_admin_token');
+  }
+};
 
 // ── Instance Axios ──────────────────────────────────────────
 // baseURL vide : les requêtes passent par le proxy Vite (même origine),
@@ -21,6 +35,13 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
+});
+
+apiClient.interceptors.request.use((config) => {
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
+  }
+  return config;
 });
 
 // ── Intercepteur de réponse (logging/erreurs globales) ──────
@@ -36,6 +57,18 @@ apiClient.interceptors.response.use(
     return Promise.reject(new Error(message));
   },
 );
+
+// ============================================================
+// ADMIN (AUTH)
+// ============================================================
+
+export const loginAdmin = async (payload: { username: string; password: string }): Promise<Token> => {
+  const { data } = await apiClient.post<Token>('/admin/login', payload);
+  if (data.access_token) {
+    setAuthToken(data.access_token);
+  }
+  return data;
+};
 
 // ============================================================
 // COCKTAILS
@@ -76,7 +109,13 @@ export const updateCocktail = async (
   id: number,
   payload: UpdateCocktailPayload,
 ): Promise<Cocktail> => {
-  const { data } = await apiClient.put<Cocktail>(`/cocktail/${id}`, payload);
+  // According to backend, it uses PUT /cocktails/edit/cocktail_id with query params
+  const { data } = await apiClient.put<Cocktail>('/cocktails/edit/cocktail_id', null, {
+    params: {
+      cocktail_id: id,
+      cocktail_name: payload.name,
+    },
+  });
   return data;
 };
 
@@ -93,6 +132,22 @@ export const updateCocktail = async (
 export const sendOrder = async (drinkId: number): Promise<OrderResponse> => {
   const { data } = await apiClient.post<OrderResponse>('/orders/', null, {
     params: { drink_id: drinkId },
+  });
+  return data;
+};
+
+// ============================================================
+// GLASSES
+// ============================================================
+
+export const fetchGlasses = async (): Promise<Glass[]> => {
+  const { data } = await apiClient.get<Glass[]>('/glasses/');
+  return data;
+};
+
+export const editGlass = async (id: number, state: boolean): Promise<any> => {
+  const { data } = await apiClient.put(`/glasses/edit_glasses/${id}`, null, {
+    params: { state },
   });
   return data;
 };

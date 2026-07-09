@@ -136,6 +136,7 @@ def build_water_segment(database: list, time_label: str) -> str:
     segment += f"  {trigger_true}\n"
     segment += f"  {time_value}\n"
     segment += f"  {trigger_false}\n"
+    segment += f"  {_get_pos(positions, 'wait')}\n"
     segment += f"  {_get_pos(positions, 'BackWater1')}\n"
     segment += f"  {_get_pos(positions, 'BackWater2')}\n"
 
@@ -152,8 +153,9 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
     rg_close = next(p["value"] for p in rg_positions if p["label"] == "close")
     rg_open  = next(p["value"] for p in rg_positions if p["label"] == "open")
 
+    glass_front   = glass["FrontGlass"]
     glass_value   = glass["value"]
-    glass_aproach = glass["aproach"]
+    glass_up = glass["UpGlass"]
 
     drops     = database[4]["bar-drops"][0]
     drop1_pos = drops["drop1"]
@@ -168,9 +170,11 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
 
     command += f"  {home}\n"
     command += f"  {front_glass}\n"
+    command += f"  {glass_front}\n"
     command += f"  {glass_value}\n"
     command += f"  {rg_close}\n"
-    command += f"  {glass_aproach}\n"
+    command += f"  {glass_up}\n"
+    command += f"  {glass_front}\n"
     command += f"  {go_back}\n"
     command += f"  {home}\n"
 

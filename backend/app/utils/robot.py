@@ -168,6 +168,7 @@ def create_script(drink: dict, glass: dict, rg_positions: list) -> str:
 
     command = ""
 
+    command += f"  {rg_open}\n"
     command += f"  {home}\n"
     command += f"  {front_glass}\n"
     command += f"  {glass_front}\n"

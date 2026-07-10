@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.utils.glasses import glasses_state
+from app.utils.glasses import glasses_state, new_glasses
 from pydantic import BaseModel
 from api.admin import verif_token
 from app.utils.load_json import open_data
@@ -20,5 +20,5 @@ def edit_glasses(glasses_id: int, state: bool, username: str = Depends(verif_tok
     return glasses_state(glasses_id, state)
 
 @router.post("/add_glasses/{glasses_id}")
-def add_glasses():
-    return glasses_state()
+def add_glasses(glasses_num: str, front_glass: str, glass_pos: str, up_glass: str):
+    return new_glasses(glasses_num, front_glass, glass_pos, up_glass)

@@ -30,3 +30,7 @@ def glasses_state(glasses_id: int, glasses_state: bool):
                 json.dump(database, f, indent=2)
             return {"message": "Glass state changed with success"}
     raise HTTPException(status_code=404, detail="Glass not found")
+
+def new_glasses(glasses_num: str, front_glass: str, glass_pos: str, up_glass: str):
+    database = open_data()
+    glasses = database[1]["glasses"]

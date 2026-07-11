@@ -104,6 +104,6 @@ ALGORITHM="HS256"
 
 ## 📂 Structure du Répertoire
 
-- [backend/](file:///Users/juan/Dev/pro/Stage/Cobot_Barman/backend) : Code source FastAPI, logique de pilotage URScript, gestion XML-RPC, base de données SQLModel.
-- [frontend/](file:///Users/juan/Dev/pro/Stage/Cobot_Barman/frontend) : Application React en TypeScript construite avec Vite (interface client & espace administration).
-- [docker-compose.yml](file:///Users/juan/Dev/pro/Stage/Cobot_Barman/docker-compose.yml) : Fichier de configuration multi-conteneur pour orchestrer l'ensemble de la solution.
+- [backend/](Cobot_Barman/backend) : Code source FastAPI, logique de pilotage URScript, gestion XML-RPC, base de données SQLModel.
+- [frontend/](Cobot_Barman/frontend) : Application React en TypeScript construite avec Vite (interface client & espace administration).
+- [docker-compose.yml](Cobot_Barman/docker-compose.yml) : Fichier de configuration multi-conteneur pour orchestrer l'ensemble de la solution.

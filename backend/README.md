@@ -21,7 +21,7 @@ Ce répertoire contient l'API et la logique de contrôle du cobot **Universal Ro
 Le backend sert de chef d'orchestre pour le robot UR10 en coordonnant les commandes, la génération de trajectoires et la synchronisation des états :
 
 ### 1. Génération de scripts URScript dynamiques
-Dans la méthode `create_script` (définie dans [robot.py](file:///Users/juan/Dev/pro/Stage/Cobot_Barman/backend/app/utils/robot.py)), le backend :
+Dans la méthode `create_script` (définie dans [robot.py](Cobot_Barman/backend/app/utils/robot.py)), le backend :
 1. Récupère la recette du cocktail commandé.
 2. Identifie les coordonnées cartésiennes de départ et d'arrivée (ex. position du verre libre, position de distribution du sirop/eau).
 3. Lit le fichier de base `init_onrobot.script` (qui initialise le pilote de la pince OnRobot RG6).
@@ -42,7 +42,7 @@ Les commandes envoyées au robot passent par une file d'attente (`Queue`).
 
 ## 🗄️ Structure de la Base de Données
 
-Les modèles SQLModel définis dans [db.py](file:///Users/juan/Dev/pro/Stage/Cobot_Barman/backend/database/db.py) sont les suivants :
+Les modèles SQLModel définis dans [db.py](Cobot_Barman/backend/database/db.py) sont les suivants :
 
 * **Cocktail** : Nom du cocktail et liste des étapes.
 * **RecipeStep** : Une étape individuelle d'une recette (associée à une boisson spécifique, ordre de l'étape, description, et points de trajectoire).
